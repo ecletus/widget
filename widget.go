@@ -25,6 +25,8 @@ type Config struct {
 	DB            *gorm.DB
 	Admin         *admin.Admin
 	PreviewAssets []string
+	AssetFS       assetfs.Interface
+	RootAssetFS   assetfs.Interface
 }
 
 func init() {
@@ -35,7 +37,17 @@ func init() {
 
 // New new widgets container
 func New(config *Config) *Widgets {
-	widgets := &Widgets{Config: config, funcMaps: template.FuncMap{}, AssetFS: assetfs.AssetFS().NameSpace("widgets")}
+	AssetFS := config.AssetFS
+
+	if AssetFS == nil {
+		if config.RootAssetFS == nil {
+			AssetFS = config.RootAssetFS.NameSpace("widgets")
+		} else {
+			AssetFS = assetfs.AssetFS().NameSpace("widgets")
+		}
+	}
+
+	widgets := &Widgets{Config: config, funcMaps: template.FuncMap{}, AssetFS: AssetFS}
 
 	if root != "" {
 		widgets.RegisterViewPath(filepath.Join(root, "app/views/widgets"))

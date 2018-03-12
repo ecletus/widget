@@ -2,7 +2,6 @@ package widget
 
 import (
 	"fmt"
-	"html/template"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -11,6 +10,7 @@ import (
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/utils"
 	"github.com/qor/serializable_meta"
+	"github.com/moisespsena/template/html/template"
 )
 
 // QorWidgetSettingInterface qor widget setting interface
@@ -21,6 +21,8 @@ type QorWidgetSettingInterface interface {
 	SetGroupName(string)
 	GetScope() string
 	SetScope(string)
+	GetEnabled() bool
+	SetEnabled(bool)
 	GetTemplate() string
 	SetTemplate(string)
 	GetSourceType() string
@@ -46,6 +48,7 @@ type QorWidgetSetting struct {
 	serializable_meta.SerializableMeta
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Enabled bool
 }
 
 // ResourceName get widget setting's resource name
@@ -125,6 +128,15 @@ func (widgetSetting QorWidgetSetting) GetShared() bool {
 // SetShared set widget setting's source id
 func (widgetSetting *QorWidgetSetting) SetShared(shared bool) {
 	widgetSetting.Shared = shared
+}
+// GetShared get widget's source ID
+func (widgetSetting QorWidgetSetting) GetEnabled() bool {
+	return widgetSetting.Enabled
+}
+
+// SetShared set widget setting's source id
+func (widgetSetting *QorWidgetSetting) SetEnabled(enabled bool) {
+	widgetSetting.Enabled = enabled
 }
 
 // GetTemplate get used widget template
@@ -340,7 +352,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 
 		res.UseTheme("widget")
 
-		res.IndexAttrs("PreviewIcon", "Name", "Description", "CreatedAt", "UpdatedAt")
+		res.IndexAttrs("PreviewIcon", "Name", "Description", "CreatedAt", "UpdatedAt", "Enabled")
 		res.ShowAttrs("PreviewIcon", "Name", "Scope", "WidgetType", "Template", "Description", "Value", "CreatedAt", "UpdatedAt", false)
 		res.EditAttrs(
 			"DisplayName", "Description", "Scope", "Widgets", "Template",
@@ -349,6 +361,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
 			},
 			"Shared", "SourceType", "SourceID",
+			"Enabled",
 		)
 		res.NewAttrs("Name", "Description", "Scope", "Widgets", "Template",
 			&admin.Section{
@@ -356,6 +369,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
 			},
 			"Shared", "SourceType", "SourceID",
+			"Enabled",
 		)
 
 		searchHandler := res.SearchHandler

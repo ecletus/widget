@@ -45,7 +45,7 @@ func TestRender(t *testing.T) {
 	})
 	Widgets.RegisterViewPath("github.com/qor/widget/test")
 
-	Admin = admin.New(&qor.Config{DB: db})
+	Admin = admin.New(&qor.NewConfig(db))
 	Admin.AddResource(Widgets)
 	Admin.MountTo("/admin", mux)
 

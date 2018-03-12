@@ -2,17 +2,18 @@ package widget
 
 import (
 	"fmt"
-	"html/template"
 	"reflect"
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
+	"github.com/moisespsena/template/html/template"
 )
 
 // Context widget context
 type Context struct {
+	Site             qor.SiteInterface
 	Widgets          *Widgets
 	DB               *gorm.DB
 	AvailableWidgets []string
@@ -46,12 +47,13 @@ func (context *Context) GetDB() *gorm.DB {
 	if context.DB != nil {
 		return context.DB
 	}
-	return context.Widgets.Config.DB
+	return context.Site.GetSystemDB().DB
 }
 
 // Clone clone a context
 func (context *Context) Clone() *Context {
 	return &Context{
+		Site:             context.Site,
 		Widgets:          context.Widgets,
 		DB:               context.DB,
 		AvailableWidgets: context.AvailableWidgets,
@@ -64,6 +66,11 @@ func (context *Context) Clone() *Context {
 
 // Render render widget based on context
 func (context *Context) Render(widgetName string, widgetGroupName string) template.HTML {
+	return context.RenderWidget(widgetName, widgetGroupName, true)
+}
+
+// Render render widget based on context
+func (context *Context) RenderWidget(widgetName string, widgetGroupName string, enabled bool) template.HTML {
 	var (
 		visibleScopes         []string
 		widgets               = context.Widgets
@@ -77,7 +84,7 @@ func (context *Context) Render(widgetName string, widgetGroupName string) templa
 		}
 	}
 
-	if setting := context.findWidgetSetting(widgetName, append(visibleScopes, "default"), widgetGroupName); setting != nil {
+	if setting := context.findWidgetSetting(widgetName, append(visibleScopes, "default"), widgetGroupName); setting != nil && (!enabled || setting.GetEnabled()) {
 		clone.WidgetSetting = setting
 		adminContext := admin.Context{Admin: context.Widgets.Config.Admin, Context: &qor.Context{DB: context.DB}}
 
@@ -144,7 +151,7 @@ func (context *Context) findWidgetSetting(widgetName string, scopes []string, wi
 				utils.ExitWithMsg("Widget: Can't Create Widget Without Widget Type")
 				return nil
 			}
-			setting = widgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+			setting = widgetSettingResource.NewStruct(context.Site).(QorWidgetSettingInterface)
 			setting.SetWidgetName(widgetName)
 			setting.SetGroupName(widgetGroupName)
 			setting.SetSerializableArgumentKind(widgetGroupName)

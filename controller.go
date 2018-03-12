@@ -1,12 +1,12 @@
 package widget
 
 import (
-	"html/template"
 	"net/http"
 
 	"github.com/qor/admin"
 	"github.com/qor/responder"
 	"github.com/qor/serializable_meta"
+	"github.com/moisespsena/template/html/template"
 )
 
 type widgetController struct {
@@ -31,12 +31,12 @@ func (wc widgetController) Index(context *admin.Context) {
 }
 
 func (wc widgetController) New(context *admin.Context) {
-	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct(context.Site).(QorWidgetSettingInterface)
 	context.Execute("new", widgetInter)
 }
 
 func (wc widgetController) Setting(context *admin.Context) {
-	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct(context.Site).(QorWidgetSettingInterface)
 	widgetType := context.Request.URL.Query().Get("widget_type")
 	if widgetType != "" {
 		if serializableMeta, ok := widgetInter.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
@@ -74,7 +74,7 @@ func (wc widgetController) Edit(context *admin.Context) {
 }
 
 func (wc widgetController) Preview(context *admin.Context) {
-	widgetContext := wc.Widgets.NewContext(&Context{
+	widgetContext := wc.Widgets.NewContext(context.Site, &Context{
 		DB:      context.GetDB(),
 		Options: map[string]interface{}{"Request": context.Request, "AdminContext": context},
 	})
@@ -140,7 +140,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 	// show page
 	var (
 		scopes     []string
-		result     = wc.Widgets.WidgetSettingResource.NewStruct()
+		result     = wc.Widgets.WidgetSettingResource.NewStruct(context.Site)
 		scope      = context.Request.URL.Query().Get("widget_scope")
 		widgetType = context.Request.URL.Query().Get("widget_type")
 	)

@@ -3,27 +3,32 @@ package widget
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/qor/qor"
 	"github.com/qor/qor/utils"
+	"github.com/moisespsena/template/html/template"
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(widgetName string, widgetGroupName string) template.HTML {
-	return widgets.NewContext(nil).Render(widgetName, widgetGroupName)
+func (widgets *Widgets) Render(site qor.SiteInterface, widgetName string, widgetGroupName string) template.HTML {
+	return widgets.NewContext(site, nil).Render(widgetName, widgetGroupName)
 }
 
 // NewContext create new context for widgets
-func (widgets *Widgets) NewContext(context *Context) *Context {
+func (widgets *Widgets) NewContext(site qor.SiteInterface, context *Context) *Context {
 	if context == nil {
 		context = &Context{}
 	}
 
+	if context.Site == nil {
+		context.Site = site
+	}
+
 	if context.DB == nil {
-		context.DB = widgets.Config.DB
+		context.DB = site.GetSystemDB().DB
 	}
 
 	if context.Options == nil {
@@ -68,6 +73,16 @@ func (context *Context) FuncMap() template.FuncMap {
 		} else {
 			groupName = widgetGroupName[0]
 		}
+		return context.RenderWidget(widgetName, groupName, false)
+	}
+
+	funcMap["render_enabled_widget"] = func(widgetName string, widgetGroupName ...string) template.HTML {
+		var groupName string
+		if len(widgetGroupName) == 0 {
+			groupName = ""
+		} else {
+			groupName = widgetGroupName[0]
+		}
 		return context.Render(widgetName, groupName)
 	}
 
@@ -94,9 +109,9 @@ func (w *Widget) Render(context *Context, file string) template.HTML {
 	}()
 
 	if content, err = context.Widgets.AssetFS.Asset(file + ".tmpl"); err == nil {
-		if tmpl, err = template.New(filepath.Base(file)).Funcs(context.FuncMaps).Parse(string(content)); err == nil {
+		if tmpl, err = template.New(filepath.Base(file)).Parse(string(content)); err == nil {
 			var result = bytes.NewBufferString("")
-			if err = tmpl.Execute(result, context.Options); err == nil {
+			if err = tmpl.Execute(result, context.Options, context.FuncMaps); err == nil {
 				return template.HTML(result.String())
 			}
 		}
