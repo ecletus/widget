@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/jinzhu/gorm"
+	"github.com/moisespsena-go/aorm"
 	"github.com/moisespsena/template/html/template"
 	"github.com/aghape/admin"
 	"github.com/aghape/aghape"
@@ -42,7 +42,7 @@ func (context *Context) Set(name string, value interface{}) {
 }
 
 // GetDB set option by name
-func (context *Context) GetDB() *gorm.DB {
+func (context *Context) GetDB() *aorm.DB {
 	return context.Context.GetDB()
 }
 

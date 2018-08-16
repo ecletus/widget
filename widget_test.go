@@ -10,14 +10,14 @@ import (
 	"testing"
 
 	"github.com/fatih/color"
-	"github.com/jinzhu/gorm"
+	"github.com/moisespsena-go/aorm"
 	"github.com/aghape/admin"
 	"github.com/aghape/aghape"
 	"github.com/aghape/aghape/test/utils"
 	"github.com/aghape/widget"
 )
 
-var db *gorm.DB
+var db *aorm.DB
 var Widgets *widget.Widgets
 var Admin *admin.Admin
 var Server *httptest.Server

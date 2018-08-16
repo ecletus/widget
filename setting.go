@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"github.com/moisespsena-go/aorm"
 	"github.com/moisespsena/template/html/template"
 	"github.com/aghape/admin"
 	"github.com/aghape/aghape"
@@ -379,7 +379,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		)
 
 		searchHandler := res.SearchHandler
-		res.SearchHandler = func(keyword string, context *qor.Context) *gorm.DB {
+		res.SearchHandler = func(keyword string, context *qor.Context) *aorm.DB {
 			// don't include widgets have source_type in index page
 			if context.ResourceID == "" {
 				context.SetDB(context.GetDB().Where("source_type = ?", ""))
