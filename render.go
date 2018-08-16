@@ -3,32 +3,27 @@ package widget
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/qor/qor"
-	"github.com/qor/qor/utils"
+	"github.com/moisespsena/go-assetfs"
 	"github.com/moisespsena/template/html/template"
+	"github.com/aghape/aghape"
+	"github.com/aghape/aghape/utils"
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(site qor.SiteInterface, widgetName string, widgetGroupName string) template.HTML {
-	return widgets.NewContext(site, nil).Render(widgetName, widgetGroupName)
+func (widgets *Widgets) Render(context *qor.Context, widgetName string, widgetGroupName string) template.HTML {
+	return widgets.NewContext(context, nil).Render(widgetName, widgetGroupName)
 }
 
 // NewContext create new context for widgets
-func (widgets *Widgets) NewContext(site qor.SiteInterface, context *Context) *Context {
+func (widgets *Widgets) NewContext(qorContext *qor.Context, context *Context) *Context {
 	if context == nil {
 		context = &Context{}
 	}
 
-	if context.Site == nil {
-		context.Site = site
-	}
-
-	if context.DB == nil {
-		context.DB = site.GetSystemDB().DB
+	if context.Context == nil {
+		context.Context = qorContext
 	}
 
 	if context.Options == nil {
@@ -92,9 +87,9 @@ func (context *Context) FuncMap() template.FuncMap {
 // Render register widget itself content
 func (w *Widget) Render(context *Context, file string) template.HTML {
 	var (
-		err     error
-		content []byte
-		tmpl    *template.Template
+		err   error
+		asset assetfs.AssetInterface
+		tmpl  *template.Template
 	)
 
 	if file == "" {
@@ -108,8 +103,8 @@ func (w *Widget) Render(context *Context, file string) template.HTML {
 		}
 	}()
 
-	if content, err = context.Widgets.AssetFS.Asset(file + ".tmpl"); err == nil {
-		if tmpl, err = template.New(filepath.Base(file)).Parse(string(content)); err == nil {
+	if asset, err = context.Widgets.AssetFS.Asset(file + ".tmpl"); err == nil {
+		if tmpl, err = template.New(filepath.Base(file)).SetPath(asset.GetName()).Parse(asset.GetString()); err == nil {
 			var result = bytes.NewBufferString("")
 			if err = tmpl.Execute(result, context.Options, context.FuncMaps); err == nil {
 				return template.HTML(result.String())
@@ -122,15 +117,7 @@ func (w *Widget) Render(context *Context, file string) template.HTML {
 
 // RegisterViewPath register views directory
 func (widgets *Widgets) RegisterViewPath(p string) {
-	if filepath.IsAbs(p) {
-		viewPaths = append(viewPaths, p)
-		widgets.AssetFS.RegisterPath(p)
-	} else {
-		for _, gopath := range strings.Split(os.Getenv("GOPATH"), ":") {
-			viewPaths = append(viewPaths, filepath.Join(gopath, "src", p))
-			widgets.AssetFS.RegisterPath(filepath.Join(gopath, "src", p))
-		}
-	}
+	widgets.AssetFS.RegisterPath(p)
 }
 
 // LoadPreviewAssets will return assets tag used for Preview

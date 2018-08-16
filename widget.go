@@ -1,38 +1,31 @@
 package widget
 
 import (
-	"fmt"
 	"html/template"
-	"os"
-	"path/filepath"
 
-	"github.com/jinzhu/gorm"
-	"github.com/qor/admin"
-	"github.com/qor/assetfs"
-	"github.com/qor/qor/resource"
-	"github.com/qor/roles"
+	"github.com/moisespsena/go-assetfs"
+	"github.com/moisespsena/go-i18n-modular/i18nmod"
+	"github.com/moisespsena/go-path-helpers"
+	"github.com/aghape/admin"
+	"github.com/aghape/aghape/resource"
+	"github.com/aghape/roles"
 )
 
+const FS_NAME = "widgets"
+
 var (
-	root, _                = os.Getwd()
-	viewPaths              []string
+	PKG                    = path_helpers.GetCalledDir()
+	I18NGROUP              = i18nmod.PkgToGroup(PKG)
 	registeredWidgets      []*Widget
 	registeredWidgetsGroup []*WidgetsGroup
 )
 
 // Config widget config
 type Config struct {
-	DB            *gorm.DB
 	Admin         *admin.Admin
 	PreviewAssets []string
 	AssetFS       assetfs.Interface
 	RootAssetFS   assetfs.Interface
-}
-
-func init() {
-	if path := os.Getenv("WEB_ROOT"); path != "" {
-		root = path
-	}
 }
 
 // New new widgets container
@@ -40,19 +33,10 @@ func New(config *Config) *Widgets {
 	AssetFS := config.AssetFS
 
 	if AssetFS == nil {
-		if config.RootAssetFS == nil {
-			AssetFS = config.RootAssetFS.NameSpace("widgets")
-		} else {
-			AssetFS = assetfs.AssetFS().NameSpace("widgets")
-		}
+		AssetFS = config.RootAssetFS.NameSpace(FS_NAME)
 	}
 
 	widgets := &Widgets{Config: config, funcMaps: template.FuncMap{}, AssetFS: AssetFS}
-
-	if root != "" {
-		widgets.RegisterViewPath(filepath.Join(root, "app/views/widgets"))
-	}
-	widgets.RegisterViewPath("app/views/widgets")
 	return widgets
 }
 
@@ -63,15 +47,6 @@ type Widgets struct {
 	Resource              *admin.Resource
 	AssetFS               assetfs.Interface
 	WidgetSettingResource *admin.Resource
-}
-
-// SetAssetFS set asset fs for render
-func (widgets *Widgets) SetAssetFS(assetFS assetfs.Interface) {
-	for _, viewPath := range viewPaths {
-		assetFS.RegisterPath(viewPath)
-	}
-
-	widgets.AssetFS = assetFS
 }
 
 // RegisterWidget register a new widget
@@ -92,9 +67,6 @@ func (widgets *Widgets) RegisterFuncMap(name string, fc interface{}) {
 // ConfigureQorResourceBeforeInitialize a method used to config Widget for qor admin
 func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
-		// register view paths
-		res.GetAdmin().RegisterViewPath("github.com/qor/widget/views")
-
 		// set resources
 		widgets.Resource = res
 
@@ -111,16 +83,17 @@ func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resour
 
 		// configure routes
 		controller := widgetController{Widgets: widgets}
-		router := res.GetAdmin().GetRouter()
-		router.Get(widgets.WidgetSettingResource.ToParam(), controller.Index, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Get(fmt.Sprintf("%v/new", widgets.WidgetSettingResource.ToParam()), controller.New, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Get(fmt.Sprintf("%v/!setting", widgets.WidgetSettingResource.ToParam()), controller.Setting, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Get(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Get(fmt.Sprintf("%v/%v/!preview", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Preview, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Get(fmt.Sprintf("%v/%v/edit", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Put(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Update, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Post(widgets.WidgetSettingResource.ToParam(), controller.Update, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
-		router.Get(fmt.Sprintf("%v/inline-edit", res.ToParam()), controller.InlineEdit, &admin.RouteConfig{Resource: widgets.WidgetSettingResource})
+		router := widgets.WidgetSettingResource.Router
+		orouter := widgets.WidgetSettingResource.ObjectRouter
+		router.Get("/", admin.NewHandler(controller.Index, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		router.Get("/new", admin.NewHandler(controller.New, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		router.Get("/!setting", admin.NewHandler(controller.Setting, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		orouter.Get("/", admin.NewHandler(controller.Edit, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		orouter.Get("/!preview", admin.NewHandler(controller.Preview, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		orouter.Get("/edit", admin.NewHandler(controller.Edit, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		orouter.Put("/", admin.NewHandler(controller.Update, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		router.Post("/", admin.NewHandler(controller.Update, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
+		router.Get("/inline-edit", admin.NewHandler(controller.InlineEdit, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
 	}
 }
 

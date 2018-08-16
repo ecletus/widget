@@ -3,10 +3,10 @@ package widget
 import (
 	"net/http"
 
-	"github.com/qor/admin"
-	"github.com/qor/responder"
-	"github.com/qor/serializable_meta"
 	"github.com/moisespsena/template/html/template"
+	"github.com/aghape/admin"
+	"github.com/aghape/responder"
+	"github.com/aghape/serializable_meta"
 )
 
 type widgetController struct {
@@ -15,6 +15,7 @@ type widgetController struct {
 
 func (wc widgetController) Index(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
+	context.DefaulLayout("index")
 
 	result, _, err := wc.getWidget(context)
 	context.AddError(err)
@@ -25,7 +26,7 @@ func (wc widgetController) Index(context *admin.Context) {
 		responder.With("html", func() {
 			context.Execute("index", result)
 		}).With("json", func() {
-			context.JSON("index", result)
+			context.JSON(result)
 		}).Respond(context.Request)
 	}
 }
@@ -69,13 +70,13 @@ func (wc widgetController) Edit(context *admin.Context) {
 			"get_widget_scopes": func() []string { return scopes },
 		}).Execute("edit", widgetSetting)
 	}).With("json", func() {
-		context.JSON("show", widgetSetting)
+		context.Layout = "show"
+		context.JSON(widgetSetting)
 	}).Respond(context.Request)
 }
 
 func (wc widgetController) Preview(context *admin.Context) {
-	widgetContext := wc.Widgets.NewContext(context.Site, &Context{
-		DB:      context.GetDB(),
+	widgetContext := wc.Widgets.NewContext(context.Context, &Context{
 		Options: map[string]interface{}{"Request": context.Request, "AdminContext": context},
 	})
 
@@ -95,7 +96,7 @@ func (wc widgetController) Update(context *admin.Context) {
 	context.AddError(err)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
-		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
+		context.AddError(context.Resource.Save(widgetSetting, context.Context))
 	}
 
 	if context.HasError() {
@@ -106,13 +107,13 @@ func (wc widgetController) Update(context *admin.Context) {
 			}).Execute("edit", widgetSetting)
 		}).With([]string{"json", "xml"}, func() {
 			context.Writer.WriteHeader(admin.HTTPUnprocessableEntity)
-			context.Encode("index", map[string]interface{}{"errors": context.GetErrors()})
+			context.Encode(map[string]interface{}{"errors": context.GetErrors()}, "index")
 		}).Respond(context.Request)
 	} else {
 		responder.With("html", func() {
 			http.Redirect(context.Writer, context.Request, context.Request.URL.Path, http.StatusFound)
 		}).With("json", func() {
-			context.JSON("index", widgetSetting)
+			context.JSON(widgetSetting, "index")
 		}).Respond(context.Request)
 	}
 }

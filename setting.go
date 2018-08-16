@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/qor/admin"
-	"github.com/qor/qor"
-	"github.com/qor/qor/resource"
-	"github.com/qor/qor/utils"
-	"github.com/qor/serializable_meta"
 	"github.com/moisespsena/template/html/template"
+	"github.com/aghape/admin"
+	"github.com/aghape/aghape"
+	"github.com/aghape/aghape/resource"
+	"github.com/aghape/aghape/utils"
+	"github.com/aghape/serializable_meta"
 )
 
 // QorWidgetSettingInterface qor widget setting interface
@@ -48,7 +48,7 @@ type QorWidgetSetting struct {
 	serializable_meta.SerializableMeta
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Enabled bool
+	Enabled   bool
 }
 
 // ResourceName get widget setting's resource name
@@ -129,6 +129,7 @@ func (widgetSetting QorWidgetSetting) GetShared() bool {
 func (widgetSetting *QorWidgetSetting) SetShared(shared bool) {
 	widgetSetting.Shared = shared
 }
+
 // GetShared get widget's source ID
 func (widgetSetting QorWidgetSetting) GetEnabled() bool {
 	return widgetSetting.Enabled
@@ -202,10 +203,11 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 
 				return "default"
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetScope(utils.ToString(metaValue.Value))
 				}
+				return nil
 			},
 		})
 
@@ -224,10 +226,11 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return ""
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetSourceType(utils.ToString(metaValue.Value))
 				}
+				return nil
 			},
 		})
 
@@ -246,10 +249,11 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return ""
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetSourceID(utils.ToString(metaValue.Value))
 				}
+				return nil
 			},
 		})
 
@@ -294,10 +298,11 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetSerializableArgumentKind(utils.ToString(metaValue.Value))
 				}
+				return nil
 			},
 		})
 
@@ -320,10 +325,11 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetTemplate(utils.ToString(metaValue.Value))
 				}
+				return nil
 			},
 		})
 
@@ -334,8 +340,8 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 
 		res.Action(&admin.Action{
 			Name: "Preview",
-			URL: func(record interface{}, context *admin.Context) string {
-				return fmt.Sprintf("%v/%v/%v/!preview", context.Admin.GetRouter().Prefix, res.ToParam(), record.(QorWidgetSettingInterface).GetWidgetName())
+			URL: func(record interface{}, context *admin.Context, args ...interface{}) string {
+				return fmt.Sprintf("%v/%v/!preview", res.GetLink(record, context.Context, args...), record.(QorWidgetSettingInterface).GetWidgetName())
 			},
 			Modes: []string{"edit", "menu_item"},
 		})

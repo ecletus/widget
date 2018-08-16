@@ -5,17 +5,16 @@ import (
 	"reflect"
 
 	"github.com/jinzhu/gorm"
-	"github.com/qor/admin"
-	"github.com/qor/qor"
-	"github.com/qor/qor/utils"
 	"github.com/moisespsena/template/html/template"
+	"github.com/aghape/admin"
+	"github.com/aghape/aghape"
+	"github.com/aghape/aghape/utils"
 )
 
 // Context widget context
 type Context struct {
-	Site             qor.SiteInterface
+	Context          *qor.Context
 	Widgets          *Widgets
-	DB               *gorm.DB
 	AvailableWidgets []string
 	Options          map[string]interface{}
 	InlineEdit       bool
@@ -44,24 +43,13 @@ func (context *Context) Set(name string, value interface{}) {
 
 // GetDB set option by name
 func (context *Context) GetDB() *gorm.DB {
-	if context.DB != nil {
-		return context.DB
-	}
-	return context.Site.GetSystemDB().DB
+	return context.Context.GetDB()
 }
 
 // Clone clone a context
 func (context *Context) Clone() *Context {
-	return &Context{
-		Site:             context.Site,
-		Widgets:          context.Widgets,
-		DB:               context.DB,
-		AvailableWidgets: context.AvailableWidgets,
-		Options:          context.Options,
-		InlineEdit:       context.InlineEdit,
-		FuncMaps:         context.FuncMaps,
-		WidgetSetting:    context.WidgetSetting,
-	}
+	clone := *context
+	return &clone
 }
 
 // Render render widget based on context
@@ -86,7 +74,7 @@ func (context *Context) RenderWidget(widgetName string, widgetGroupName string, 
 
 	if setting := context.findWidgetSetting(widgetName, append(visibleScopes, "default"), widgetGroupName); setting != nil && (!enabled || setting.GetEnabled()) {
 		clone.WidgetSetting = setting
-		adminContext := admin.Context{Admin: context.Widgets.Config.Admin, Context: &qor.Context{DB: context.DB}}
+		adminContext := admin.Context{Admin: context.Widgets.Config.Admin, Context: clone.Context}
 
 		var (
 			widgetObj     = GetWidget(setting.GetSerializableArgumentKind())
@@ -94,14 +82,14 @@ func (context *Context) RenderWidget(widgetName string, widgetGroupName string, 
 		)
 
 		if clone.InlineEdit {
-			prefix := widgets.Resource.GetAdmin().GetRouter().Prefix
+			prefix := adminContext.GenStaticURL()
 			inlineEditURL := adminContext.URLFor(setting, widgetSettingResource)
 			if widgetObj.InlineEditURL != nil {
 				inlineEditURL = widgetObj.InlineEditURL(context)
 			}
 
 			return template.HTML(fmt.Sprintf(
-				"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
+				"<script data-prefix=\"%v\" src=\"%v/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
 				prefix,
 				prefix,
 				utils.ToParamString(widgetObj.Name),
@@ -151,7 +139,7 @@ func (context *Context) findWidgetSetting(widgetName string, scopes []string, wi
 				utils.ExitWithMsg("Widget: Can't Create Widget Without Widget Type")
 				return nil
 			}
-			setting = widgetSettingResource.NewStruct(context.Site).(QorWidgetSettingInterface)
+			setting = widgetSettingResource.NewStruct(context.Context.Site).(QorWidgetSettingInterface)
 			setting.SetWidgetName(widgetName)
 			setting.SetGroupName(widgetGroupName)
 			setting.SetSerializableArgumentKind(widgetGroupName)
