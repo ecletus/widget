@@ -12,8 +12,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/moisespsena-go/aorm"
 	"github.com/aghape/admin"
-	"github.com/aghape/aghape"
-	"github.com/aghape/aghape/test/utils"
+	"github.com/aghape/core"
+	"github.com/aghape/core/test/utils"
 	"github.com/aghape/widget"
 )
 
@@ -45,7 +45,7 @@ func TestRender(t *testing.T) {
 	})
 	Widgets.RegisterViewPath("github.com/aghape/widget/test")
 
-	Admin = admin.New(&qor.NewConfig(db))
+	Admin = admin.New(&core.NewConfig(db))
 	Admin.AddResource(Widgets)
 	Admin.MountTo("/admin", mux)
 

@@ -7,17 +7,17 @@ import (
 
 	"github.com/moisespsena/go-assetfs"
 	"github.com/moisespsena/template/html/template"
-	"github.com/aghape/aghape"
-	"github.com/aghape/aghape/utils"
+	"github.com/aghape/core"
+	"github.com/aghape/core/utils"
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(context *qor.Context, widgetName string, widgetGroupName string) template.HTML {
+func (widgets *Widgets) Render(context *core.Context, widgetName string, widgetGroupName string) template.HTML {
 	return widgets.NewContext(context, nil).Render(widgetName, widgetGroupName)
 }
 
 // NewContext create new context for widgets
-func (widgets *Widgets) NewContext(qorContext *qor.Context, context *Context) *Context {
+func (widgets *Widgets) NewContext(qorContext *core.Context, context *Context) *Context {
 	if context == nil {
 		context = &Context{}
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/moisespsena/go-i18n-modular/i18nmod"
 	"github.com/moisespsena/go-path-helpers"
 	"github.com/aghape/admin"
-	"github.com/aghape/aghape/resource"
+	"github.com/aghape/core/resource"
 	"github.com/aghape/roles"
 )
 

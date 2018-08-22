@@ -7,13 +7,13 @@ import (
 	"github.com/moisespsena-go/aorm"
 	"github.com/moisespsena/template/html/template"
 	"github.com/aghape/admin"
-	"github.com/aghape/aghape"
-	"github.com/aghape/aghape/utils"
+	"github.com/aghape/core"
+	"github.com/aghape/core/utils"
 )
 
 // Context widget context
 type Context struct {
-	Context          *qor.Context
+	Context          *core.Context
 	Widgets          *Widgets
 	AvailableWidgets []string
 	Options          map[string]interface{}

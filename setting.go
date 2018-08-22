@@ -7,9 +7,9 @@ import (
 	"github.com/moisespsena-go/aorm"
 	"github.com/moisespsena/template/html/template"
 	"github.com/aghape/admin"
-	"github.com/aghape/aghape"
-	"github.com/aghape/aghape/resource"
-	"github.com/aghape/aghape/utils"
+	"github.com/aghape/core"
+	"github.com/aghape/core/resource"
+	"github.com/aghape/core/utils"
 	"github.com/aghape/serializable_meta"
 )
 
@@ -174,7 +174,7 @@ func (widgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.
 // ConfigureQorResource a method used to config Widget for qor admin
 func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
-		res.Meta(&admin.Meta{Name: "PreviewIcon", Valuer: func(result interface{}, context *qor.Context) interface{} {
+		res.Meta(&admin.Meta{Name: "PreviewIcon", Valuer: func(result interface{}, context *core.Context) interface{} {
 			if setting, ok := result.(QorWidgetSettingInterface); ok {
 				if widget := GetWidget(setting.GetSerializableArgumentKind()); widget != nil {
 					return template.HTML(fmt.Sprintf("<img class='qor-preview-icon' src='%v'/>", widget.PreviewIcon))
@@ -190,7 +190,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		res.Meta(&admin.Meta{
 			Name: "Scope",
 			Type: "hidden",
-			Valuer: func(result interface{}, context *qor.Context) interface{} {
+			Valuer: func(result interface{}, context *core.Context) interface{} {
 				if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
 					return scope
 				}
@@ -203,7 +203,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 
 				return "default"
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *core.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetScope(utils.ToString(metaValue.Value))
 				}
@@ -214,7 +214,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		res.Meta(&admin.Meta{
 			Name: "SourceType",
 			Type: "hidden",
-			Valuer: func(result interface{}, context *qor.Context) interface{} {
+			Valuer: func(result interface{}, context *core.Context) interface{} {
 				if sourceType := context.Request.URL.Query().Get("widget_source_type"); sourceType != "" {
 					return sourceType
 				}
@@ -226,7 +226,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return ""
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *core.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetSourceType(utils.ToString(metaValue.Value))
 				}
@@ -237,7 +237,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		res.Meta(&admin.Meta{
 			Name: "SourceID",
 			Type: "hidden",
-			Valuer: func(result interface{}, context *qor.Context) interface{} {
+			Valuer: func(result interface{}, context *core.Context) interface{} {
 				if sourceID := context.Request.URL.Query().Get("widget_source_id"); sourceID != "" {
 					return sourceID
 				}
@@ -249,7 +249,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return ""
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *core.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetSourceID(utils.ToString(metaValue.Value))
 				}
@@ -260,7 +260,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		res.Meta(&admin.Meta{
 			Name: "Widgets",
 			Type: "select_one",
-			Valuer: func(result interface{}, context *qor.Context) interface{} {
+			Valuer: func(result interface{}, context *core.Context) interface{} {
 				if typ := context.Request.URL.Query().Get("widget_type"); typ != "" {
 					return typ
 				}
@@ -275,7 +275,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 
 				return ""
 			},
-			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+			Collection: func(result interface{}, context *core.Context) (results [][]string) {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					if setting.GetWidgetName() == "" {
 						for _, widget := range registeredWidgets {
@@ -298,7 +298,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *core.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetSerializableArgumentKind(utils.ToString(metaValue.Value))
 				}
@@ -309,13 +309,13 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		res.Meta(&admin.Meta{
 			Name: "Template",
 			Type: "select_one",
-			Valuer: func(result interface{}, context *qor.Context) interface{} {
+			Valuer: func(result interface{}, context *core.Context) interface{} {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					return setting.GetTemplate()
 				}
 				return ""
 			},
-			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+			Collection: func(result interface{}, context *core.Context) (results [][]string) {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					if widget := GetWidget(setting.GetSerializableArgumentKind()); widget != nil {
 						for _, value := range widget.Templates {
@@ -325,7 +325,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 				}
 				return
 			},
-			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) error {
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *core.Context) error {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					setting.SetTemplate(utils.ToString(metaValue.Value))
 				}
@@ -346,7 +346,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 			Modes: []string{"edit", "menu_item"},
 		})
 
-		res.AddProcessor(func(value interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
+		res.AddProcessor(func(value interface{}, metaValues *resource.MetaValues, context *core.Context) error {
 			if widgetSetting, ok := value.(QorWidgetSettingInterface); ok {
 				if widgetSetting.GetShared() {
 					widgetSetting.SetSourceType("")
@@ -379,7 +379,7 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		)
 
 		searchHandler := res.SearchHandler
-		res.SearchHandler = func(keyword string, context *qor.Context) *aorm.DB {
+		res.SearchHandler = func(keyword string, context *core.Context) *aorm.DB {
 			// don't include widgets have source_type in index page
 			if context.ResourceID == "" {
 				context.SetDB(context.GetDB().Where("source_type = ?", ""))
