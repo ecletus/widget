@@ -96,7 +96,7 @@ func (wc widgetController) Update(context *admin.Context) {
 	context.AddError(err)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
-		context.AddError(context.Resource.Save(widgetSetting, context.Context))
+		context.AddError(context.Resource.Crud(context.Context).Update(widgetSetting))
 	}
 
 	if context.HasError() {
