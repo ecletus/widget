@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/moisespsena/go-assetfs"
-	"github.com/moisespsena/template/html/template"
 	"github.com/aghape/core"
 	"github.com/aghape/core/utils"
+	"github.com/moisespsena/go-assetfs"
+	"github.com/moisespsena/go-assetfs/assetfsapi"
+	"github.com/moisespsena/template/html/template"
 )
 
 // Render find widget by name, render it based on current context
@@ -117,7 +118,7 @@ func (w *Widget) Render(context *Context, file string) template.HTML {
 
 // RegisterViewPath register views directory
 func (widgets *Widgets) RegisterViewPath(p string) {
-	widgets.AssetFS.RegisterPath(p)
+	widgets.AssetFS.(assetfsapi.PathRegistrator).RegisterPath(p)
 }
 
 // LoadPreviewAssets will return assets tag used for Preview

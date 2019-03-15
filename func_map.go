@@ -29,7 +29,7 @@ var funcMap = map[string]interface{}{
 			for _, role := range context.Roles {
 				roleNames = append(roleNames, role)
 			}
-			if w.Permission == nil || w.Permission.HasPermission(roles.Create, roleNames...) {
+			if w.Permission == nil || roles.HasPermission(w.Permission, roles.Create, roleNames...) {
 				for _, groupedWidgets := range groupedWidgetsSlice {
 					if groupedWidgets.Group == w.Group {
 						groupedWidgets.Widgets = append(groupedWidgets.Widgets, w)
