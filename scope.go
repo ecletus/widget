@@ -1,6 +1,6 @@
 package widget
 
-import "github.com/aghape/core/utils"
+import "github.com/ecletus/core/utils"
 
 var registeredScopes []*Scope
 

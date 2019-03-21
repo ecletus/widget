@@ -6,9 +6,9 @@ import (
 
 	"github.com/moisespsena-go/aorm"
 	"github.com/moisespsena/template/html/template"
-	"github.com/aghape/admin"
-	"github.com/aghape/core"
-	"github.com/aghape/core/utils"
+	"github.com/ecletus/admin"
+	"github.com/ecletus/core"
+	"github.com/ecletus/core/utils"
 )
 
 // Context widget context

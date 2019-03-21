@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/moisespsena/template/html/template"
-	"github.com/aghape/admin"
-	"github.com/aghape/responder"
-	"github.com/aghape/serializable_meta"
+	"github.com/ecletus/admin"
+	"github.com/ecletus/responder"
+	"github.com/ecletus/serializable_meta"
 )
 
 type widgetController struct {

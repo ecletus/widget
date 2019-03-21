@@ -11,10 +11,10 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/moisespsena-go/aorm"
-	"github.com/aghape/admin"
-	"github.com/aghape/core"
-	"github.com/aghape/core/test/utils"
-	"github.com/aghape/widget"
+	"github.com/ecletus/admin"
+	"github.com/ecletus/core"
+	"github.com/ecletus/core/test/utils"
+	"github.com/ecletus/widget"
 )
 
 var db *aorm.DB
@@ -43,7 +43,7 @@ func TestRender(t *testing.T) {
 	Widgets = widget.New(&widget.Config{
 		DB: db,
 	})
-	Widgets.RegisterViewPath("github.com/aghape/widget/test")
+	Widgets.RegisterViewPath("github.com/ecletus/widget/test")
 
 	Admin = admin.New(&core.NewConfig(db))
 	Admin.AddResource(Widgets)
