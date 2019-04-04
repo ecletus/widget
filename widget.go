@@ -3,8 +3,8 @@ package widget
 import (
 	"html/template"
 
-	"github.com/moisespsena/go-assetfs"
-	"github.com/moisespsena/go-i18n-modular/i18nmod"
+	"github.com/moisespsena-go/assetfs"
+	"github.com/moisespsena-go/i18n-modular/i18nmod"
 	"github.com/moisespsena-go/path-helpers"
 	"github.com/ecletus/admin"
 	"github.com/ecletus/core/resource"
