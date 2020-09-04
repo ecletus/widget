@@ -65,7 +65,7 @@ func (widgets *Widgets) RegisterFuncMap(name string, fc interface{}) {
 }
 
 // ConfigureQorResourceBeforeInitialize a method used to config Widget for qor admin
-func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resourcer) {
+func (widgets *Widgets) ConfigureResourceBeforeInitialize(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
 		// set resources
 		widgets.Resource = res
@@ -84,7 +84,7 @@ func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resour
 		// configure routes
 		controller := widgetController{Widgets: widgets}
 		router := widgets.WidgetSettingResource.Router
-		orouter := widgets.WidgetSettingResource.ObjectRouter
+		orouter := widgets.WidgetSettingResource.ItemRouter
 		router.Get("/", admin.NewHandler(controller.Index, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
 		router.Get("/new", admin.NewHandler(controller.New, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))
 		router.Get("/!setting", admin.NewHandler(controller.Setting, &admin.RouteConfig{Resource: widgets.WidgetSettingResource}))

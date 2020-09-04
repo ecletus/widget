@@ -3,10 +3,10 @@ package widget
 import (
 	"net/http"
 
-	"github.com/moisespsena/template/html/template"
 	"github.com/ecletus/admin"
 	"github.com/ecletus/responder"
 	"github.com/ecletus/serializable_meta"
+	"github.com/moisespsena/template/html/template"
 )
 
 type widgetController struct {
@@ -50,7 +50,7 @@ func (wc widgetController) Setting(context *admin.Context) {
 		Title:    "Settings",
 		Rows:     [][]string{{"Kind"}, {"SerializableMeta"}},
 	}}
-	content := context.Render("setting", struct {
+	content := context.RenderHtml("setting", struct {
 		Widget  interface{}
 		Section []*admin.Section
 	}{
@@ -82,10 +82,10 @@ func (wc widgetController) Preview(context *admin.Context) {
 
 	content := context.Funcs(template.FuncMap{
 		"load_preview_assets": wc.Widgets.LoadPreviewAssets,
-	}).Funcs(widgetContext.FuncMap()).Render("preview", struct {
+	}).Funcs(widgetContext.FuncMap()).RenderHtml("preview", struct {
 		WidgetName string
 	}{
-		WidgetName: context.ResourceID,
+		WidgetName: context.ResourceID.String(),
 	})
 	context.Writer.Write([]byte(content))
 }
@@ -119,14 +119,14 @@ func (wc widgetController) Update(context *admin.Context) {
 }
 
 func (wc widgetController) InlineEdit(context *admin.Context) {
-	context.Writer.Write([]byte(context.Render("widget/inline_edit")))
+	context.Include(context.Writer, "widget/inline_edit")
 }
 
 func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
-	var DB = context.GetDB()
+	var DB = context.DB()
 
 	// index page
-	if context.ResourceID == "" && context.Request.Method == "GET" {
+	if context.ResourceID == nil && context.Request.Method == "GET" {
 		scope := context.Request.URL.Query().Get("widget_scope")
 		if scope == "" {
 			scope = "default"
@@ -157,7 +157,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		widgetType = context.Request.Form.Get("QorResource.Kind")
 	}
 
-	err := DB.FirstOrInit(result, QorWidgetSetting{Name: context.ResourceID, Scope: scope}).Error
+	err := DB.FirstOrInit(result, QorWidgetSetting{Name: context.ResourceID.String(), Scope: scope}).Error
 
 	if widgetType != "" {
 		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {

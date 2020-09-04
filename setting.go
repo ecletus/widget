@@ -171,8 +171,8 @@ func (widgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.
 	return nil
 }
 
-// ConfigureQorResource a method used to config Widget for qor admin
-func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourcer) {
+// ConfigureResource a method used to config Widget for qor admin
+func (widgetSetting *QorWidgetSetting) ConfigureResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
 		res.Meta(&admin.Meta{Name: "PreviewIcon", Valuer: func(result interface{}, context *core.Context) interface{} {
 			if setting, ok := result.(QorWidgetSettingInterface); ok {
@@ -379,12 +379,12 @@ func (widgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourc
 		)
 
 		searchHandler := res.SearchHandler
-		res.SearchHandler = func(keyword string, context *core.Context) *aorm.DB {
+		res.SearchHandler = func(searcher *admin.Searcher, db *aorm.DB, keyword string) (_ *aorm.DB, err error) {
 			// don't include widgets have source_type in index page
-			if context.ResourceID == "" {
-				context.SetDB(context.GetDB().Where("source_type = ?", ""))
+			if searcher.ResourceID == nil {
+				db = db.Where("source_type = ?", "")
 			}
-			return searchHandler(keyword, context)
+			return searchHandler(searcher, db, keyword)
 		}
 	}
 }

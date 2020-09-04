@@ -43,7 +43,7 @@ func (context *Context) Set(name string, value interface{}) {
 
 // GetDB set option by name
 func (context *Context) GetDB() *aorm.DB {
-	return context.Context.GetDB()
+	return context.Context.DB()
 }
 
 // Clone clone a context
@@ -82,7 +82,7 @@ func (context *Context) RenderWidget(widgetName string, widgetGroupName string, 
 		)
 
 		if clone.InlineEdit {
-			prefix := adminContext.GenStaticURL()
+			prefix := adminContext.JoinStaticURL()
 			inlineEditURL := adminContext.URLFor(setting, widgetSettingResource)
 			if widgetObj.InlineEditURL != nil {
 				inlineEditURL = widgetObj.InlineEditURL(context)
@@ -136,7 +136,7 @@ func (context *Context) findWidgetSetting(widgetName string, scopes []string, wi
 	if context.SourceType == "" {
 		if setting == nil {
 			if widgetGroupName == "" {
-				utils.ExitWithMsg("Widget: Can't Create Widget Without Widget Type")
+				panic(fmt.Errorf("Widget: Can't Create Widget Without Widget Type"))
 				return nil
 			}
 			setting = widgetSettingResource.NewStruct(context.Context.Site).(QorWidgetSettingInterface)

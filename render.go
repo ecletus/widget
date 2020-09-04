@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/ecletus/core"
-	"github.com/ecletus/core/utils"
 	"github.com/moisespsena-go/assetfs"
 	"github.com/moisespsena-go/assetfs/assetfsapi"
+	"github.com/moisespsena-go/tracederror"
 	"github.com/moisespsena/template/html/template"
 )
 
@@ -99,13 +99,16 @@ func (w *Widget) Render(context *Context, file string) template.HTML {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("Get error when render file %v: %v", file, r)
-			utils.ExitWithMsg(err)
+			if st, ok := r.(tracederror.TracedError); ok {
+				panic(st)
+			} else {
+				panic(fmt.Errorf("Get error when render file %v: %v", file, r))
+			}
 		}
 	}()
 
 	if asset, err = context.Widgets.AssetFS.Asset(file + ".tmpl"); err == nil {
-		if tmpl, err = template.New(filepath.Base(file)).SetPath(asset.GetName()).Parse(asset.GetString()); err == nil {
+		if tmpl, err = template.New(filepath.Base(file)).SetPath(asset.Name()).Parse(assetfs.MustDataS(asset)); err == nil {
 			var result = bytes.NewBufferString("")
 			if err = tmpl.Execute(result, context.Options, context.FuncMaps); err == nil {
 				return template.HTML(result.String())
